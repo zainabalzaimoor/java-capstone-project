@@ -45,4 +45,4 @@ FindIt provides a centralized platform where users can:
 
 ## 🗄️ Database Design (ERD)
 > The following diagram represents the current database structure:
-! [ERD](docs/ERD.png)
+![ERD](docs/ERD.png)
