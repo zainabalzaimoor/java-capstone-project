@@ -104,4 +104,21 @@ public class ItemController {
         Item updated = itemService.updateItemStatus(id,status);
         return ResponseEntity.ok(itemMapper.toResponseDTO(updated));
     }
+
+    // GET /api/items/search?type=FOUND&category=WALLET&location=Mall
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<ItemResponseDTO>> searchItems(
+            @RequestParam(required = false) ItemType type,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String location) {
+
+        List<ItemResponseDTO> response = itemService
+                .searchItems(type, category, location)
+                .stream()
+                .map(itemMapper::toResponseDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 }
