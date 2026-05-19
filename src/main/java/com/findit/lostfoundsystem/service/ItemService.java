@@ -9,8 +9,8 @@ import com.findit.lostfoundsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +18,7 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final MatchService matchService;
 
     // CREATE
     public Item createItem(Item item, String email) {
@@ -27,7 +28,12 @@ public class ItemService {
         item.setUser(user);
         item.setStatus(ItemStatus.OPEN);
 
-        return itemRepository.save(item);
+        Item savedItem = itemRepository.save(item);
+
+        //Trigger matching automatically!
+        matchService.findMatches(savedItem);
+
+        return savedItem;
     }
 
     //READ
@@ -44,16 +50,11 @@ public class ItemService {
         return itemRepository.findByType(type);
     }
 
-//    public List<Item> getItemsByUser(Long userId) {
-//        return itemRepository.findByUserId(userId);
-//    }
-
     //UPDATE
     public Item updateItem(Long id, Item updatedItem) {
         Item existingItem = itemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
 
-//        if(!existingItem.getUser().getEmail().equals(updatedItem.getUser().getEmail())) {}
 
         existingItem.setTitle(updatedItem.getTitle());
         existingItem.setDescription(updatedItem.getDescription());
@@ -74,10 +75,18 @@ public class ItemService {
         return itemRepository.findByUserEmail(email);
     }
 
-    //ADMIN - Manually change item status
+    //ADMIN - Manually update item status
     public Item updateItemStatus(Long id, ItemStatus status) {
         Item existing = getItemById(id);
         existing.setStatus(status);
         return itemRepository.save(existing);
     }
+
+    // SEARCH
+    public List<Item> searchItems(ItemType type, String category, String location) {
+        // Convert enum to String, pass null if type is null
+        String typeStr = (type != null) ? type.name() : null;
+        return itemRepository.searchItems(typeStr, category, location);
+    }
+
 }
