@@ -2,15 +2,13 @@ package com.findit.lostfoundsystem.model;
 
 import com.findit.lostfoundsystem.enums.MatchStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Entity
 @Getter
 @Setter
@@ -22,20 +20,24 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lost_item_id")
     private Item lostItem;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "found_item_id")
     private Item foundItem;
 
-    private Double matchScore;
+    @Column(name = "match_score")
+    private double matchScore;
 
     @Enumerated(EnumType.STRING)
-    private MatchStatus status;
+    @Column(nullable = false)
+    @Builder.Default
+    private MatchStatus status =  MatchStatus.PENDING;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
