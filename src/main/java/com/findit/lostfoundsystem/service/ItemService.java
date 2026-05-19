@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,21 +65,10 @@ public class ItemService {
         return itemRepository.save(existingItem);
     }
 
-    //ADMIN - DELETE
-    public void deleteItem(Long id) {
-        itemRepository.deleteById(id);
-    }
-
     public List<Item> getItemsByEmail(String email) {
         return itemRepository.findByUserEmail(email);
     }
 
-    //ADMIN - Manually update item status
-    public Item updateItemStatus(Long id, ItemStatus status) {
-        Item existing = getItemById(id);
-        existing.setStatus(status);
-        return itemRepository.save(existing);
-    }
 
     // SEARCH
     public List<Item> searchItems(ItemType type, String category, String location) {
@@ -89,4 +77,15 @@ public class ItemService {
         return itemRepository.searchItems(typeStr, category, location);
     }
 
+    //ADMIN - DELETE
+    public void deleteItem(Long id) {
+        itemRepository.deleteById(id);
+    }
+
+    //ADMIN - Manually update item status
+    public Item updateItemStatus(Long id, ItemStatus status) {
+        Item existing = getItemById(id);
+        existing.setStatus(status);
+        return itemRepository.save(existing);
+    }
 }
