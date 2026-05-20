@@ -10,9 +10,6 @@ import java.util.List;
 @Repository
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
-    // All claims for a specific item
-    List<Claim> findByItemId(Long itemId);
-
     // All claims made by a specific user
     List<Claim> findByClaimantId(Long claimantId);
 
