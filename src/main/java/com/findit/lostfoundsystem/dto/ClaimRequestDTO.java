@@ -1,4 +1,7 @@
 package com.findit.lostfoundsystem.dto;
 
-public class ClaimRequestDTO {
-}
+public record ClaimRequestDTO (
+        Long itemId,
+        String message,
+        String proofAttachmentUrl
+){}
