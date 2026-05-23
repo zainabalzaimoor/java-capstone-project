@@ -1,0 +1,63 @@
+services:
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16
+    container_name: findit-db
+    environment:
+      POSTGRES_DB: lostfounddb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - findit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application
+  app:
+    build: .
+    container_name: findit-app
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/lostfounddb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      # JWT (from .env)
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+      # Email (from .env)
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST: smtp.gmail.com
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - findit-network
+    restart: unless-stopped
+
+networks:
+  findit-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
