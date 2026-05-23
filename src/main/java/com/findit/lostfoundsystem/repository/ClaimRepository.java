@@ -18,4 +18,6 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
     // Check if user already claimed this item
     boolean existsByItemIdAndClaimantId(Long itemId, Long claimantId);
+
+    void deleteByItemId(Long itemId);
 }
