@@ -18,4 +18,6 @@ public interface MatchRepository extends JpaRepository<Match,Long> {
             Long lostItemId,
             Long foundItemId
     );
+
+    void deleteByLostItemIdOrFoundItemId(Long lostItemId, Long foundItemId);
 }
