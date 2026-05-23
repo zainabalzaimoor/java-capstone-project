@@ -4,6 +4,7 @@ package com.findit.lostfoundsystem.service;
 import com.findit.lostfoundsystem.enums.ItemStatus;
 import com.findit.lostfoundsystem.enums.ItemType;
 import com.findit.lostfoundsystem.enums.MatchStatus;
+import com.findit.lostfoundsystem.enums.NotificationType;
 import com.findit.lostfoundsystem.model.Item;
 import com.findit.lostfoundsystem.model.Match;
 import com.findit.lostfoundsystem.repository.ItemRepository;
@@ -19,6 +20,8 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final ItemRepository itemRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
 
     // Will be called everytime new item is posted
     public void findMatches(Item newItem) {
@@ -62,7 +65,31 @@ public class MatchService {
                 itemRepository.save(lostItem);
                 itemRepository.save(foundItem);
 
-                // TODO: send notifications (Step 4)
+                // ─── NOTIFY LOST ITEM OWNER ───────────────────────────
+                notificationService.sendNotification(
+                        lostItem.getUser(),
+                        "We found a possible match for your lost item: " + lostItem.getTitle(),
+                        NotificationType.MATCH_FOUND,
+                        lostItem.getId()
+                );
+                emailService.sendMatchFoundEmail(
+                        lostItem.getUser().getEmail(),
+                        lostItem.getUser().getName(),
+                        lostItem.getTitle()
+                );
+
+                // ─── NOTIFY FOUND ITEM OWNER ──────────────────────────
+                notificationService.sendNotification(
+                        foundItem.getUser(),
+                        "The item you found (" + foundItem.getTitle() + ") may belong to someone!",
+                        NotificationType.MATCH_FOUND,
+                        foundItem.getId()
+                );
+                emailService.sendMatchFoundEmail(
+                        foundItem.getUser().getEmail(),
+                        foundItem.getUser().getName(),
+                        foundItem.getTitle()
+                );
             }
         }
     }
@@ -131,12 +158,35 @@ public class MatchService {
 
         match.setStatus(newStatus);
 
-        // If rejected → reopen both items
-        if (newStatus == MatchStatus.REJECTED) {
+        if (newStatus == MatchStatus.CONFIRMED) {
+            // Reopen both items → OPEN (or keep MATCHED, up to you)
+            emailService.sendMatchConfirmedEmail(
+                    match.getLostItem().getUser().getEmail(),
+                    match.getLostItem().getUser().getName(),
+                    match.getLostItem().getTitle()
+            );
+            emailService.sendMatchConfirmedEmail(
+                    match.getFoundItem().getUser().getEmail(),
+                    match.getFoundItem().getUser().getName(),
+                    match.getFoundItem().getTitle()
+            );
+
+        } else if (newStatus == MatchStatus.REJECTED) {
             match.getLostItem().setStatus(ItemStatus.OPEN);
             match.getFoundItem().setStatus(ItemStatus.OPEN);
             itemRepository.save(match.getLostItem());
             itemRepository.save(match.getFoundItem());
+
+            emailService.sendMatchRejectedEmail(
+                    match.getLostItem().getUser().getEmail(),
+                    match.getLostItem().getUser().getName(),
+                    match.getLostItem().getTitle()
+            );
+            emailService.sendMatchRejectedEmail(
+                    match.getFoundItem().getUser().getEmail(),
+                    match.getFoundItem().getUser().getName(),
+                    match.getFoundItem().getTitle()
+            );
         }
 
         return matchRepository.save(match);
