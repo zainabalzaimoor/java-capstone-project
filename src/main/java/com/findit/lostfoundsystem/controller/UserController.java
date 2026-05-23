@@ -17,23 +17,18 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
 
-//    @Autowired
-//    public UserController(UserService userService) {
-//        this.userService = userService;
-//    }
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterDTO user) throws Exception {
         System.out.println("Calling registerUser ==> ");
          userService.register(user);
-        return ResponseEntity.ok("User registered. Check email for verification.");
+        return ResponseEntity.ok(Map.of("message", "User registered. Check email for verification."));
     }
 
     @GetMapping("/verify")
     public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
         try {
             userService.verifyUser(token);
-            return ResponseEntity.ok("Account verified successfully! You can now login.");
+            return ResponseEntity.ok(Map.of("message","Account verified successfully! You can now login.").toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -59,14 +54,15 @@ public class UserController {
     public ResponseEntity<?> forgetPassword(@RequestBody ForgetPasswordDTO request) {
         System.out.println("Calling forgetPassword ==> ");
         userService.forgotPassword(request.email());
-        return ResponseEntity.ok("Password reset email sent successfully!");
+//        return ResponseEntity.ok("Password reset email sent successfully!");
+        return ResponseEntity.ok(Map.of("message", "Reset link sent to your email."));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO request) {
         System.out.println("Calling resetPassword ==> ");
         userService.resetPassword(request);
-        return ResponseEntity.ok("Password reset successfully!");
+        return ResponseEntity.ok(Map.of("message","Password reset successfully!"));
     }
 
     @PostMapping("/change-password")
@@ -75,7 +71,7 @@ public class UserController {
 
         String email = authentication.getName();
         userService.changePassword(email, request);
-        return ResponseEntity.ok("Password changed successfully!");
+        return ResponseEntity.ok(Map.of("message","Password changed successfully!"));
     }
 
 }
