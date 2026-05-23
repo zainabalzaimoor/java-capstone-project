@@ -4,6 +4,7 @@ import com.findit.lostfoundsystem.dto.ClaimRequestDTO;
 import com.findit.lostfoundsystem.enums.ClaimStatus;
 import com.findit.lostfoundsystem.enums.ItemStatus;
 import com.findit.lostfoundsystem.enums.ItemType;
+import com.findit.lostfoundsystem.enums.NotificationType;
 import com.findit.lostfoundsystem.model.Claim;
 import com.findit.lostfoundsystem.model.Item;
 import com.findit.lostfoundsystem.model.User;
@@ -22,6 +23,8 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
 
     //USER - file a claim
     public Claim createClaim(ClaimRequestDTO request, String email) {
@@ -60,6 +63,19 @@ public class ClaimService {
         item.setStatus(ItemStatus.CLAIMED);
         itemRepository.save(item);
 
+        // ─── NOTIFY FINDER ────────────────────────────────────
+        notificationService.sendNotification(
+                item.getUser(),
+                "Someone filed a claim on your found item: " + item.getTitle(),
+                NotificationType.CLAIM_FILED,
+                item.getId()
+        );
+        emailService.sendClaimFiledEmail(
+                item.getUser().getEmail(),
+                item.getUser().getName(),
+                item.getTitle()
+        );
+
         return claimRepository.save(claim);
     }
 
@@ -92,13 +108,41 @@ public class ClaimService {
 
         if (newStatus == ClaimStatus.APPROVED) {
             // Close the item — it has been returned!
+            // ─── NOTIFY CLAIMANT ──────────────────────────────
+            notificationService.sendNotification(
+                    claim.getClaimant(),
+                    "Your claim for " + claim.getItem().getTitle() + " has been APPROVED!",
+                    NotificationType.CLAIM_APPROVED,
+                    claim.getItem().getId()
+            );
+            emailService.sendClaimApprovedEmail(
+                    claim.getClaimant().getEmail(),
+                    claim.getClaimant().getName(),
+                    claim.getItem().getTitle()
+            );
+
             claim.getItem().setStatus(ItemStatus.CLOSED);
             itemRepository.save(claim.getItem());
         } else if (newStatus == ClaimStatus.REJECTED) {
             // Reopen the item
+            // ─── NOTIFY CLAIMANT ──────────────────────────────
+            notificationService.sendNotification(
+                    claim.getClaimant(),
+                    "Your claim for " + claim.getItem().getTitle() + " has been REJECTED.",
+                    NotificationType.CLAIM_REJECTED,
+                    claim.getItem().getId()
+            );
+            emailService.sendClaimRejectedEmail(
+                    claim.getClaimant().getEmail(),
+                    claim.getClaimant().getName(),
+                    claim.getItem().getTitle()
+            );
+
             claim.getItem().setStatus(ItemStatus.OPEN);
             itemRepository.save(claim.getItem());
         }
+
+
 
         return claimRepository.save(claim);
     }
