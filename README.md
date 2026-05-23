@@ -184,7 +184,7 @@ notifications → id, user_id, message, type, is_read,
 
 ## 📅 Planning Documentation
 
-> 📎 [View Project Board on Trello / GitHub Projects](https://trello.com/b/Rlz1mVVX/findit-lost-found-system)
+> 📎 [View Project Board on Trello](https://trello.com/b/Rlz1mVVX/findit-lost-found-system)
 
 ### Development Phases
 
