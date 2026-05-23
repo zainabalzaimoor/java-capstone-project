@@ -4,8 +4,7 @@ import com.findit.lostfoundsystem.enums.ItemStatus;
 import com.findit.lostfoundsystem.enums.ItemType;
 import com.findit.lostfoundsystem.model.Item;
 import com.findit.lostfoundsystem.model.User;
-import com.findit.lostfoundsystem.repository.ItemRepository;
-import com.findit.lostfoundsystem.repository.UserRepository;
+import com.findit.lostfoundsystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +16,9 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final MatchRepository matchRepository;
+    private final ClaimRepository claimRepository;
+    private final NotificationRepository notificationRepository;
     private final MatchService matchService;
 
     // CREATE
@@ -79,7 +81,14 @@ public class ItemService {
 
     //ADMIN - DELETE
     public void deleteItem(Long id) {
-        itemRepository.deleteById(id);
+        Item existing = getItemById(id);
+
+        // Delete related records first
+        matchRepository.deleteByLostItemIdOrFoundItemId(id, id);
+        claimRepository.deleteByItemId(id);
+        notificationRepository.deleteByRelatedItemId(id);
+
+        itemRepository.delete(existing);
     }
 
     //ADMIN - Manually update item status
