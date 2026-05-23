@@ -1,0 +1,7 @@
+target/
+*.md
+.git/
+.gitignore
+docker-compose.yml
+.env
+findit-frontend/
