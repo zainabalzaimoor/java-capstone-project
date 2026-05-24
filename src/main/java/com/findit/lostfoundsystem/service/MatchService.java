@@ -159,7 +159,6 @@ public class MatchService {
         match.setStatus(newStatus);
 
         if (newStatus == MatchStatus.CONFIRMED) {
-            // Reopen both items → OPEN (or keep MATCHED, up to you)
             emailService.sendMatchConfirmedEmail(
                     match.getLostItem().getUser().getEmail(),
                     match.getLostItem().getUser().getName(),
