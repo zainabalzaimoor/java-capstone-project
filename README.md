@@ -79,22 +79,6 @@ Any pair scoring 0.5 or above triggers a Match record and notifies both users by
 
 ---
 
-## ⚠️ Unsolved Problems & Known Issues
-
-### 1. Image Upload (Partial Solution)
-Currently, item images and profile pictures are stored as **base64 strings** in the database (`TEXT` column). This works for small images in a demo environment but is not production-ready. The proper solution would be to integrate a cloud storage service such as **AWS S3** or **Cloudinary**, upload the file there, and store only the returned URL in the database. This was identified as a known limitation but was not implemented within the capstone timeline.
-
-### 2. Frontend Integration (In Progress)
-The Angular frontend was partially built with full pages for auth, items, matches, claims, and notifications. However, due to time constraints and several Angular 19 compatibility issues (component naming conventions, CORS configuration, JWT interceptor setup), the frontend was not fully polished and is not included in the final submission. The backend REST API is fully functional and tested via Postman.
-
-### 3. Match Scoring — Location Matching
-The current location matching uses exact string comparison (`equalsIgnoreCase`). This means "City Centre Mall" and "city centre" would not match. A more robust solution would use partial string matching or integrate a geolocation API to match items within a certain radius. This is noted as a future enhancement.
-
-### 4. No Pagination
-All list endpoints currently return the full dataset. For a production system with thousands of items, pagination should be implemented using Spring Data's `Pageable` interface. This was scoped out for the capstone but is a clear next step.
-
----
-
 ## 👤 User Stories
 
 ### Regular User
